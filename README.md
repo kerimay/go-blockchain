@@ -1,3 +1,1 @@
-# Go Blockchain
-
-Blockchain project in Go.
+"# go-blockchain" 
