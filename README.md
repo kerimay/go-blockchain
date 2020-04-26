@@ -1,1 +1,3 @@
-"# go-blockchain" 
+# Go Blockchain
+
+Blockchain project in Go.
