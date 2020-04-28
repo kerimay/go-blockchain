@@ -1,40 +1,36 @@
 package blockchain
 
 import (
+	"bytes"
 	"crypto/sha256"
-	"fmt"
+	"strconv"
 	"time"
 )
 
 type Block struct {
-	Data string
-	Hash string
-	PrevHash string
-	Timestamp string
+	Data []byte
+	Hash []byte
+	PrevHash []byte
+	Timestamp int64
 }
 
-func GenesisBlock() Block {
-	newHash := sha256.Sum256([]byte("Genesis Block"))
-	newStrHash := fmt.Sprintf("%x", newHash)
-	genesisTimestamp := time.Now().UTC().String()
+func NewBlock(data []byte, prevHash []byte) *Block {
 
-	genesisBlock := Block{"Genesis Block",newStrHash, "", genesisTimestamp}
-	return genesisBlock
+	block := &Block{
+		Data: data,
+		PrevHash: prevHash,
+		Timestamp: time.Now().Unix(),
+	}
+	block.Hash = block.setHash()
+	return block
 }
 
-func CreateBlock(data string) Block {
+func (b *Block) setHash() []byte {
 
-	var newPrevHash string
-	newPrevHash = newBlockchain[len(newBlockchain)-1].Hash
+	byteTime := []byte(strconv.FormatInt(b.Timestamp, 10))
 
-	newHash := sha256.Sum256([]byte(data))
-	newStrHash := fmt.Sprintf("%x", newHash)
+	headers := bytes.Join([][]byte{b.Data, b.PrevHash, byteTime}, []byte{})
+	newHash := sha256.Sum256(headers)
 
-	newTimestamp := time.Now().UTC().String()
-
-	returnedBlock :=  Block{data, newStrHash, newPrevHash , newTimestamp}
-	fmt.Println(returnedBlock)
-
-	return returnedBlock
+	return newHash[:]
 }
-

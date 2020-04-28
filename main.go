@@ -5,10 +5,10 @@ import (
 )
 
 func main() {
-	blockchain.CreateBlockchain()
-	blockchain.CreateBlock("Send 2 BTC to Selçuk")
-	blockchain.CreateBlock("Send 2 BTC to Selçuk")
-	blockchain.CreateBlock("Send 1 BTC to Cengiz")
-	blockchain.QueryBlockchain()
+	bc := blockchain.CreateBlockchain()
+	bc.AddBlock([]byte("Send 2 BTC to Selçuk"))
+	bc.AddBlock([]byte("Send 2 BTC to Selçuk"))
+	bc.AddBlock([]byte("Send 1 BTC to Cengiz"))
+	bc.QueryBlockchain()
 
 }
