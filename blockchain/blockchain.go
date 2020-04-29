@@ -25,6 +25,7 @@ func (bc *Blockchain) QueryBlockchain() {
 		fmt.Printf("PrevHash: %x\n", b.PrevHash)
 		fmt.Printf("Data: %s\n", b.Data)
 		fmt.Printf("Hash: %x\n", b.Hash)
+		fmt.Printf("PoW: %v\n", isPoWProven())
 		fmt.Printf("\n")
 	}
 }

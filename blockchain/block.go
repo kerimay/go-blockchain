@@ -12,6 +12,7 @@ type Block struct {
 	Hash []byte
 	PrevHash []byte
 	Timestamp int64
+	Nonce int
 }
 
 func NewBlock(data []byte, prevHash []byte) *Block {
@@ -21,16 +22,17 @@ func NewBlock(data []byte, prevHash []byte) *Block {
 		PrevHash: prevHash,
 		Timestamp: time.Now().Unix(),
 	}
-	block.Hash = block.setHash()
+	block.Hash, block.Nonce = findHash()
 	return block
 }
 
-func (b *Block) setHash() []byte {
+func (b *Block) hashedHeader() []byte {
 
 	byteTime := []byte(strconv.FormatInt(b.Timestamp, 10))
 
 	headers := bytes.Join([][]byte{b.Data, b.PrevHash, byteTime}, []byte{})
-	newHash := sha256.Sum256(headers)
+	hashedHeader := sha256.Sum256(headers)
 
-	return newHash[:]
+
+	return hashedHeader[:]
 }
