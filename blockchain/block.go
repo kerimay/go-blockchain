@@ -26,7 +26,7 @@ func NewBlock(data []byte, prevHash []byte) *Block {
 	return block
 }
 
-func (b *Block) hashedHeader() ([]byte) {
+func (b *Block) hashedHeader() []byte {
 	byteTime := []byte(strconv.FormatInt(b.Timestamp, 10))
 	byteNonce := []byte(strconv.FormatInt(int64(b.Nonce),10))
 	headers := bytes.Join([][]byte{b.Data, b.PrevHash, byteTime, byteNonce}, []byte{})
