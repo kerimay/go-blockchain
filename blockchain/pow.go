@@ -23,13 +23,14 @@ func findHash() ([]byte, int) {
 	targetInt := targetBigInt()
 	for b.Nonce = 0; b.Nonce < maxNonce; b.Nonce++ {
 		intHash, byteHash := hashBigInt()
-		fmt.Printf("%s\n", byteHash[:])
+		fmt.Println("_________")
+		fmt.Printf("Hex hash: %s\n", byteHash[:])
 		if intHash.Cmp(targetInt) == -1 { // for making our hash SMALLER than the constant target
 			break
 		}
-		fmt.Println(intHash, b.Nonce)
-		fmt.Println(targetInt)
-		fmt.Println((*big.Int).BitLen(targetInt))
+		fmt.Printf("Big Int hash and nonce: %v\n%v\n", intHash, b.Nonce)
+		fmt.Printf("target big int: %v\n", targetInt)
+		fmt.Printf("hash length: %d\n", len(byteHash))
 	}
 	fmt.Println(b.Hash, b.Nonce)
 	return b.Hash, b.Nonce
@@ -55,6 +56,6 @@ func hashBigInt()  (*big.Int, string) {
 	hashedHeader := b.hashedHeader()
 	strHashedHeader := fmt.Sprintf("%x", hashedHeader)
 	z := new(big.Int)
-	intHash := z.SetBytes(hashedHeader[:])
+	intHash := z.SetBytes(hashedHeader)
 	return intHash, strHashedHeader
 }
