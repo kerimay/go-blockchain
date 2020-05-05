@@ -1,61 +1,47 @@
 package blockchain
 
 import (
-
-	"fmt"
-	"math/big"
+	"bytes"
+	"math"
 )
 
 type ProofOfWork struct {
-	*Block
-	*Target
+	block *Block
 }
 
-type Target struct {
-	targetBits int
+func NewProofOfWork(block *Block) *ProofOfWork {
+	return &ProofOfWork{block: block}
 }
 
-const maxNonce = 4294967295
-var b Block // this will be removed
+const maxNonce = math.MaxInt64
 
-func findHash() ([]byte, int) {
-
+func (p *ProofOfWork) findHash() ([]byte, int) {
+	var header []byte
+	var nonce int
 	targetInt := targetBigInt()
-	for b.Nonce = 0; b.Nonce < maxNonce; b.Nonce++ {
-		intHash, byteHash := hashBigInt()
-		fmt.Println("_________")
-		fmt.Printf("Hex hash: %s\n", byteHash[:])
+
+	for nonce = 0; nonce < maxNonce; nonce++ {
+		header = hashData(p.prepareData(nonce))
+		intHash := hashBigInt(header)
+
 		if intHash.Cmp(targetInt) == -1 { // for making our hash SMALLER than the constant target
 			break
 		}
-		fmt.Printf("Big Int hash and nonce: %v\n%v\n", intHash, b.Nonce)
-		fmt.Printf("target big int: %v\n", targetInt)
-		fmt.Printf("hash length: %d\n", len(byteHash))
 	}
-	fmt.Println(b.Hash, b.Nonce)
-	return b.Hash, b.Nonce
+	return header, nonce
 }
 
-func isPoWProven() bool {
-	/*generatedHash, generatedNonce := findHash()
-	if generatedHash < targetBigInt() {
-
-	}*/
-	return true
+func (p *ProofOfWork) isPoWProven(nonce int) bool {
+	targetInt := targetBigInt()
+	hash := hashData(p.prepareData(nonce))
+	intHash := hashBigInt(hash)
+	isValid := intHash.Cmp(targetInt) == -1
+	return isValid
 }
 
-func targetBigInt() *big.Int {
-
-	targetBig := big.NewInt(1)
-	targetBig.Lsh(targetBig, 232)
-
-	return targetBig
-}
-
-func hashBigInt()  (*big.Int, string) {
-	hashedHeader := b.hashedHeader()
-	strHashedHeader := fmt.Sprintf("%x", hashedHeader)
-	z := new(big.Int)
-	intHash := z.SetBytes(hashedHeader)
-	return intHash, strHashedHeader
+func (p *ProofOfWork) prepareData(nonce int) []byte {
+	b := p.block
+	byteTime := intToBytes(b.Timestamp)
+	byteNonce := intToBytes(int64(nonce))
+	return bytes.Join([][]byte{b.Data, b.PrevHash, byteTime, byteNonce}, []byte{})
 }

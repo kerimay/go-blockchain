@@ -21,11 +21,13 @@ func (bc *Blockchain) AddBlock(data []byte)  {
 }
 
 func (bc *Blockchain) QueryBlockchain() {
+
 	for _, b := range bc.Blocks {
+		p := NewProofOfWork(b)
 		fmt.Printf("PrevHash: %x\n", b.PrevHash)
 		fmt.Printf("Data: %s\n", b.Data)
 		fmt.Printf("Hash: %x\n", b.Hash)
-		fmt.Printf("PoW: %v\n", isPoWProven())
+		fmt.Printf("PoW: %v\n", p.isPoWProven(b.Nonce))
 		fmt.Printf("\n")
 	}
 }
