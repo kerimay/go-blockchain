@@ -1,42 +1,48 @@
 package blockchain
 
 import (
-
+	"bytes"
 	"fmt"
-	"math/big"
+	"math"
 )
 
 type ProofOfWork struct {
-	*Block
-	*Target
+	block *Block
 }
 
-type Target struct {
-	targetBits int
+func NewProofOfWork(block *Block) *ProofOfWork {
+	return &ProofOfWork{block: block}
 }
 
-const maxNonce = 4294967295
-var b Block // this will be removed
 
-func findHash() ([]byte, int) {
+const maxNonce = math.MaxInt64
 
+
+func (p *ProofOfWork) findHash() ([]byte, int) {
+	b := p.block
+
+	var header []byte
+	var nonce int
 	targetInt := targetBigInt()
-	for b.Nonce = 0; b.Nonce < maxNonce; b.Nonce++ {
-		intHash, byteHash := hashBigInt()
+	header = p.prepareData()
+	hashedHeader := hashData(header)
+	for nonce = 0; nonce < maxNonce; nonce++ {
+		intHash := hashBigInt(hashedHeader)
 		fmt.Println("_________")
-		fmt.Printf("Hex hash: %s\n", byteHash[:])
+		fmt.Printf("Hex hash: %s\n", hashedHeader[:])
 		if intHash.Cmp(targetInt) == -1 { // for making our hash SMALLER than the constant target
+			b.Hash = hashedHeader
 			break
 		}
 		fmt.Printf("Big Int hash and nonce: %v\n%v\n", intHash, b.Nonce)
 		fmt.Printf("target big int: %v\n", targetInt)
-		fmt.Printf("hash length: %d\n", len(byteHash))
+
 	}
-	fmt.Println(b.Hash, b.Nonce)
-	return b.Hash, b.Nonce
+	fmt.Println(b.Hash, nonce)
+	return b.Hash, nonce
 }
 
-func isPoWProven() bool {
+func (p *ProofOfWork) isPoWProven() bool {
 	/*generatedHash, generatedNonce := findHash()
 	if generatedHash < targetBigInt() {
 
@@ -44,18 +50,10 @@ func isPoWProven() bool {
 	return true
 }
 
-func targetBigInt() *big.Int {
-
-	targetBig := big.NewInt(1)
-	targetBig.Lsh(targetBig, 232)
-
-	return targetBig
+func (p *ProofOfWork) prepareData() []byte {
+	b := p.block
+	byteTime := intToBytes(b.Timestamp)
+	byteNonce := intToBytes(int64(b.Nonce))
+	return bytes.Join([][]byte{b.Data, b.PrevHash, byteTime, byteNonce}, []byte{})
 }
 
-func hashBigInt()  (*big.Int, string) {
-	hashedHeader := b.hashedHeader()
-	strHashedHeader := fmt.Sprintf("%x", hashedHeader)
-	z := new(big.Int)
-	intHash := z.SetBytes(hashedHeader)
-	return intHash, strHashedHeader
-}

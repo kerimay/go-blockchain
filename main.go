@@ -1,7 +1,7 @@
 package main
 
 import (
-	"go-bootcamp/blockchain"
+	"github.com/kerimay/go-blockchain/blockchain"
 )
 
 func main() {
