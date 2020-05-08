@@ -2,17 +2,12 @@ package main
 
 import (
 	"github.com/kerimay/go-blockchain/blockchain"
-	"github.com/kerimay/go-blockchain/database"
 )
-
-/*type BlockchainDBStructure interface {
-
-}*/
 
 func main() {
 
-	db := database.DataBase{}
-	db.OpenDataBase()
+	/*db := database.DataBase{}
+	db.RunDatabase()*/
 
 	bc := blockchain.CreateBlockchain()
 	bc.AddBlock([]byte("Send 2 BTC to Selçuk"))
