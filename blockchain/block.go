@@ -22,8 +22,8 @@ func NewBlock(data []byte, prevHash []byte) *Block {
 
 	pow := NewProofOfWork(block)
 	b := pow.block
-
 	b.Hash, b.Nonce = pow.findHash()
 
+	DBase.NewTransaction(block)
 	return block
 }

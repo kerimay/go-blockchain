@@ -2,7 +2,6 @@ package database
 
 import (
 	"bytes"
-	"encoding/gob"
 	"fmt"
 	"github.com/kerimay/go-blockchain/blockchain"
 	bolt "go.etcd.io/bbolt"
@@ -16,19 +15,14 @@ type DataBase struct {
 
 var network bytes.Buffer // Stand-in for the network.
 
-func (d *DataBase) RunDatabase(data []byte, prevHash []byte) {
-	d.OpenDataBase()
-	d.CreateBlocksBucket() // is there a blockchain?
-	d.NewTransaction(data, prevHash)
-}
-
-func (d *DataBase) OpenDataBase() {
+func (d *DataBase) OpenDataBase(fileName string) *DataBase {
 	log.Println("Connecting the database...")
-	db, err := bolt.Open("blockchain.db", 0666, &bolt.Options{Timeout: 1 * time.Second})
+	db, err := bolt.Open(fileName, 0666, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
+	return &DataBase{db}
 }
 
 func (d *DataBase) CreateBlocksBucket() {
@@ -41,7 +35,7 @@ func (d *DataBase) CreateBlocksBucket() {
 	})
 }
 
-func (d *DataBase) NewTransaction(data []byte, prevHash []byte) {
+func (d *DataBase) NewTransaction(block *blockchain.Block) {
 	// Create several keys in a transaction.
 	tx, err := d.db.Begin(true)
 	if err != nil {
@@ -49,14 +43,7 @@ func (d *DataBase) NewTransaction(data []byte, prevHash []byte) {
 	}
 
 	b := tx.Bucket([]byte("blocks"))
-
-	block := blockchain.NewBlock(data, prevHash)
-	// Create an encoder and send a value.
-	enc := gob.NewEncoder(&network)
-	err = enc.Encode(&block)
-	if err != nil {
-		log.Fatal("encode:", err)
-	}
+	EncodeStruct(block)
 
 	if err = b.Put(block.Hash, network.Bytes()); err != nil {
 		log.Fatal(err)
@@ -75,11 +62,8 @@ func (d *DataBase) QueryDB() {
 	}
 
 	var decBlock blockchain.Block
-	dec := gob.NewDecoder(&network)
-	err = dec.Decode(&decBlock)
-	if err != nil {
-		log.Fatal("decode err", err)
-	}
+	DecodeStruct(decBlock)
+
 	c := tx.Bucket([]byte("blocks")).Cursor()
 	for k, v := c.First(); k != nil; k, v = c.Next() {
 		fmt.Printf("%x hash belongs to the block: %s\n", k, v)
