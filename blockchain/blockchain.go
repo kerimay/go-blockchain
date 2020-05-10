@@ -3,24 +3,29 @@ package blockchain
 import (
 	"fmt"
 	"github.com/kerimay/go-blockchain/database"
+	"go-bootcamp/blockchain"
 )
 
 type Blockchain struct {
 	Blocks []*Block
-	*database.DataBase
 }
 
 var DBase database.DataBase
+var tip = DBase.QueryTip()
 
-func CreateBlockchain(fileName string) *Blockchain {
-
+func RunBlockchain(fileName string, data []byte) {
 	db := DBase.OpenDataBase(fileName)
-	if db == nil {
-		DBase.CreateBlocksBucket()
+	if db == nil { // ?????
+		blockchain.CreateBlockchain()
 	}
-	genesisBlock := NewBlock([]byte("Genesis Block"), []byte{})
+	b := &Blockchain{Blocks: []*Block{{Hash: tip}}} // ??????????
+	b.AddBlock(data)
+}
 
-	return &Blockchain{[]*Block{genesisBlock}, db}
+func (bc *Blockchain) CreateBlockchain() *Blockchain {
+	genesisBlock := NewBlock([]byte("Genesis Block"), []byte{})
+	tip = genesisBlock.Hash // gerek var mı?
+	return &Blockchain{[]*Block{genesisBlock}}
 }
 
 func (bc *Blockchain) AddBlock(data []byte) {
@@ -30,7 +35,6 @@ func (bc *Blockchain) AddBlock(data []byte) {
 }
 
 func (bc *Blockchain) QueryBlockchain() {
-
 	for _, b := range bc.Blocks {
 		p := NewProofOfWork(b)
 		fmt.Printf("PrevHash: %x\n", b.PrevHash)

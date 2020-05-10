@@ -4,11 +4,13 @@ import (
 	"github.com/kerimay/go-blockchain/blockchain"
 )
 
+const dbFile = "blockchain.db"
+
 func main() {
 
-	bc := blockchain.CreateBlockchain("blockchain.db")
-	bc.AddBlock([]byte("Send 2 BTC to Selçuk"))
-	bc.AddBlock([]byte("Send 2 BTC to Selçuk"))
-	bc.AddBlock([]byte("Send 1 BTC to Cengiz"))
-	bc.QueryBlockchain()
+	blockchain.RunBlockchain(dbFile, []byte("Send 2 BTC to Selçuk"))
+	blockchain.RunBlockchain(dbFile, []byte("Send 2 BTC to Selçuk"))
+	blockchain.RunBlockchain(dbFile, []byte("Send 1 BTC to Cengiz"))
+
+	//blockchain.Blockchain.QueryBlockchain()
 }

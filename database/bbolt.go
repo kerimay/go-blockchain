@@ -14,6 +14,7 @@ type DataBase struct {
 }
 
 var network bytes.Buffer // Stand-in for the network.
+var tip []byte
 
 func (d *DataBase) OpenDataBase(fileName string) *DataBase {
 	log.Println("Connecting the database...")
@@ -25,16 +26,6 @@ func (d *DataBase) OpenDataBase(fileName string) *DataBase {
 	return &DataBase{db}
 }
 
-func (d *DataBase) CreateBlocksBucket() {
-	d.db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucket([]byte("blocks"))
-		if err != nil {
-			return fmt.Errorf("create bucket: %s", err)
-		}
-		return nil
-	})
-}
-
 func (d *DataBase) NewTransaction(block *blockchain.Block) {
 	// Create several keys in a transaction.
 	tx, err := d.db.Begin(true)
@@ -42,16 +33,32 @@ func (d *DataBase) NewTransaction(block *blockchain.Block) {
 		log.Fatal(err)
 	}
 
-	b := tx.Bucket([]byte("blocks"))
+	b, err := tx.CreateBucketIfNotExists([]byte("buckets"))
+	if err != nil {
+		log.Fatal("bucket creation", err)
+	}
 	EncodeStruct(block)
 
 	if err = b.Put(block.Hash, network.Bytes()); err != nil {
 		log.Fatal(err)
 	}
 
+	if err = b.Put([]byte("l"), block.Hash); err != nil {
+		log.Fatal(err)
+	}
+
 	if err = tx.Commit(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (d *DataBase) QueryTip() []byte {
+	b, err := d.db.Begin(false)
+	if err != nil {
+		log.Fatal(err)
+	}
+	tip = b.Bucket([]byte("blocks")).Get([]byte("l"))
+	return tip
 }
 
 func (d *DataBase) QueryDB() {
