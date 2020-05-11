@@ -3,7 +3,7 @@ package blockchain
 import (
 	"fmt"
 	"github.com/kerimay/go-blockchain/database"
-	"go-bootcamp/blockchain"
+	"log"
 )
 
 type Blockchain struct {
@@ -15,23 +15,29 @@ var tip = DBase.QueryTip()
 
 func RunBlockchain(fileName string, data []byte) {
 	db := DBase.OpenDataBase(fileName)
-	if db == nil { // ?????
-		blockchain.CreateBlockchain()
+	if db.IsBlockchain() == false {
+		CreateBlockchain() // bağlı mı olmalı?
 	}
-	b := &Blockchain{Blocks: []*Block{{Hash: tip}}} // ??????????
+	/*if db == nil { // ?????
+	}*/
+	b := &Blockchain{Blocks: []*Block{}} // ??????????
 	b.AddBlock(data)
 }
 
-func (bc *Blockchain) CreateBlockchain() *Blockchain {
+func CreateBlockchain() *Blockchain {
 	genesisBlock := NewBlock([]byte("Genesis Block"), []byte{})
 	tip = genesisBlock.Hash // gerek var mı?
 	return &Blockchain{[]*Block{genesisBlock}}
 }
 
 func (bc *Blockchain) AddBlock(data []byte) {
-	prevBlock := bc.Blocks[len(bc.Blocks)-1]
-	newBlock := NewBlock(data, prevBlock.Hash)
-	bc.Blocks = append(bc.Blocks, newBlock)
+	newBlock := NewBlock(data, tip)         // tip çakışma yaşıyor mu
+	bc.Blocks = append(bc.Blocks, newBlock) // bunlara gerek kalmayacak
+
+	if string(tip) != string(newBlock.Hash) {
+		log.Fatal("tip and hash are not equal")
+	}
+
 }
 
 func (bc *Blockchain) QueryBlockchain() {

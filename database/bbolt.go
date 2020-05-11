@@ -33,7 +33,7 @@ func (d *DataBase) NewTransaction(block *blockchain.Block) {
 		log.Fatal(err)
 	}
 
-	b, err := tx.CreateBucketIfNotExists([]byte("buckets"))
+	b, err := tx.CreateBucketIfNotExists([]byte("blocks"))
 	if err != nil {
 		log.Fatal("bucket creation", err)
 	}
@@ -61,7 +61,7 @@ func (d *DataBase) QueryTip() []byte {
 	return tip
 }
 
-func (d *DataBase) QueryDB() {
+func (d *DataBase) QueryDB() { // düzenle
 	// Iterate over the values in sorted key order.
 	tx, err := d.db.Begin(false)
 	if err != nil {
@@ -82,5 +82,20 @@ func (d *DataBase) QueryDB() {
 
 	if err = d.db.Close(); err != nil {
 		log.Fatal(err)
+	}
+}
+
+// Will be used if needed
+func (d *DataBase) IsBlockchain() bool {
+	tx, err := d.db.Begin(false)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	isFull := tx.Bucket([]byte("blocks"))
+	if isFull == nil {
+		return false
+	} else {
+		return true
 	}
 }

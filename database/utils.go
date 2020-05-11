@@ -21,12 +21,3 @@ func DecodeStruct(x interface{}) {
 		log.Fatal("decode err", err)
 	}
 }
-
-func (d *DataBase) isBlockchain() {
-	tx, err := d.db.Begin(false)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	tx.Bucket()
-}
