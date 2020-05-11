@@ -12,7 +12,7 @@ type Block struct {
 	Nonce     int
 }
 
-func NewBlock(data []byte, prevHash []byte) *Block {
+func (bl *Block) NewBlock(data []byte, prevHash []byte) *Block {
 	block := &Block{
 		Data:      data,
 		PrevHash:  prevHash,
@@ -21,6 +21,11 @@ func NewBlock(data []byte, prevHash []byte) *Block {
 	pow := NewProofOfWork(block)
 	b := pow.block
 	b.Hash, b.Nonce = pow.findHash()
-	DBase.NewTransaction(block)
+	// ERROR
+	//DBase.NewTransaction()
 	return block
+}
+
+func (bl *Block) BringBlockHash() []byte {
+	return bl.Hash // yeterli mi?
 }

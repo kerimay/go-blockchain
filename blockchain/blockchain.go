@@ -8,10 +8,12 @@ import (
 
 type Blockchain struct {
 	Blocks []*Block
+	*database.DataBase
 }
 
-var DBase database.DataBase
+var DBase *database.DataBase
 var tip = DBase.QueryTip()
+var bl *Block
 
 func RunBlockchain(fileName string, data []byte) {
 	db := DBase.OpenDataBase(fileName)
@@ -25,19 +27,18 @@ func RunBlockchain(fileName string, data []byte) {
 }
 
 func CreateBlockchain() *Blockchain {
-	genesisBlock := NewBlock([]byte("Genesis Block"), []byte{})
+	genesisBlock := bl.NewBlock([]byte("Genesis Block"), []byte{})
 	tip = genesisBlock.Hash // gerek var mı?
-	return &Blockchain{[]*Block{genesisBlock}}
+	return &Blockchain{[]*Block{genesisBlock}, DBase}
 }
 
 func (bc *Blockchain) AddBlock(data []byte) {
-	newBlock := NewBlock(data, tip)         // tip çakışma yaşıyor mu
+	newBlock := bl.NewBlock(data, tip)      // tip çakışma yaşıyor mu
 	bc.Blocks = append(bc.Blocks, newBlock) // bunlara gerek kalmayacak
 
 	if string(tip) != string(newBlock.Hash) {
 		log.Fatal("tip and hash are not equal")
 	}
-
 }
 
 func (bc *Blockchain) QueryBlockchain() {

@@ -3,7 +3,7 @@ package database
 import (
 	"bytes"
 	"fmt"
-	"github.com/kerimay/go-blockchain/blockchain"
+	bchain_dbase_interaction "github.com/kerimay/go-blockchain/bchain-dbase-interaction"
 	bolt "go.etcd.io/bbolt"
 	"log"
 	"time"
@@ -11,6 +11,7 @@ import (
 
 type DataBase struct {
 	db *bolt.DB
+	bchain_dbase_interaction.Bchain
 }
 
 var network bytes.Buffer // Stand-in for the network.
@@ -23,10 +24,10 @@ func (d *DataBase) OpenDataBase(fileName string) *DataBase {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	return &DataBase{db}
+	return &DataBase{db, d.Bchain} // doğru mu?
 }
 
-func (d *DataBase) NewTransaction(block *blockchain.Block) {
+func (d *DataBase) NewTransaction(o *bchain_dbase_interaction.Bchain) {
 	// Create several keys in a transaction.
 	tx, err := d.db.Begin(true)
 	if err != nil {
@@ -37,13 +38,13 @@ func (d *DataBase) NewTransaction(block *blockchain.Block) {
 	if err != nil {
 		log.Fatal("bucket creation", err)
 	}
-	EncodeStruct(block)
+	EncodeStruct(o)
 
-	if err = b.Put(block.Hash, network.Bytes()); err != nil {
+	if err = b.Put(d.Bchain.BringBlockHash(), network.Bytes()); err != nil {
 		log.Fatal(err)
 	}
 
-	if err = b.Put([]byte("l"), block.Hash); err != nil {
+	if err = b.Put([]byte("l"), d.Bchain.BringBlockHash()); err != nil {
 		log.Fatal(err)
 	}
 
@@ -68,7 +69,7 @@ func (d *DataBase) QueryDB() { // düzenle
 		log.Fatal(err)
 	}
 
-	var decBlock blockchain.Block
+	var decBlock bchain_dbase_interaction.Bchain
 	DecodeStruct(decBlock)
 
 	c := tx.Bucket([]byte("blocks")).Cursor()
