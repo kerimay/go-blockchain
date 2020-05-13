@@ -1,53 +1,54 @@
 package blockchain
 
 import (
-	"fmt"
-	"github.com/kerimay/go-blockchain/database"
+	"github.com/kerimay/go-blockchain/organizeall"
 	"log"
 )
 
 type Blockchain struct {
-	Blocks []*Block
-	*database.DataBase
+	db  organizeall.DBaseInterface
+	tip []byte
 }
 
-var DBase *database.DataBase
-var tip = DBase.QueryTip()
-var bl *Block
+func NewBlockchain(db organizeall.DBaseInterface) *Blockchain {
+	var bl Block
+	if db.BlockchainExists() == false {
+		log.Println("There wasn't a previous blockchain before. New blockchain creation begins...")
+		genesisBlock := NewGenesisBlock()
+		data := bl.EncodeStruct(genesisBlock)
+		newTip := genesisBlock.Hash
 
-func RunBlockchain(fileName string, data []byte) {
-	db := DBase.OpenDataBase(fileName)
-	if db.IsBlockchain() == false {
-		CreateBlockchain() // bağlı mı olmalı?
+		db.NewTransaction(newTip, data)
+		return &Blockchain{db, newTip}
+	} else {
+		newTip := db.QueryTip()
+		/*var data string
+		b.AddBlock(data)*/
+		return &Blockchain{db, newTip}
 	}
-	/*if db == nil { // ?????
-	}*/
-	b := &Blockchain{Blocks: []*Block{}} // ??????????
-	b.AddBlock(data)
 }
 
-func CreateBlockchain() *Blockchain {
-	genesisBlock := bl.NewBlock([]byte("Genesis Block"), []byte{})
-	tip = genesisBlock.Hash // gerek var mı?
-	return &Blockchain{[]*Block{genesisBlock}, DBase}
+func NewGenesisBlock() *Block {
+	log.Println("Genesis Block is being created...")
+	genesisBlock := NewBlock([]byte("Genesis Block"), []byte{})
+	return genesisBlock
 }
 
-func (bc *Blockchain) AddBlock(data []byte) {
-	newBlock := bl.NewBlock(data, tip)      // tip çakışma yaşıyor mu
-	bc.Blocks = append(bc.Blocks, newBlock) // bunlara gerek kalmayacak
-
-	if string(tip) != string(newBlock.Hash) {
-		log.Fatal("tip and hash are not equal")
-	}
+func (bc *Blockchain) AddBlock(data string) {
+	var bl Block
+	bc.tip = bc.db.QueryTip()
+	block := NewBlock([]byte(data), bc.tip)
+	encodedStruct := bl.EncodeStruct(block)
+	bc.db.NewTransaction(block.Hash, encodedStruct)
 }
 
 func (bc *Blockchain) QueryBlockchain() {
-	for _, b := range bc.Blocks {
+	/*for _, b := range bc.Blocks {
 		p := NewProofOfWork(b)
 		fmt.Printf("PrevHash: %x\n", b.PrevHash)
 		fmt.Printf("Data: %s\n", b.Data)
 		fmt.Printf("Hash: %x\n", b.Hash)
 		fmt.Printf("PoW: %v\n", p.isPoWProven(b.Nonce))
 		fmt.Printf("\n")
-	}
+	}*/
 }

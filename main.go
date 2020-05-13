@@ -2,15 +2,26 @@ package main
 
 import (
 	"github.com/kerimay/go-blockchain/blockchain"
+	"github.com/kerimay/go-blockchain/database"
+	"log"
 )
 
 const dbFile = "blockchain.db"
 
 func main() {
-
-	blockchain.RunBlockchain(dbFile, []byte("Send 2 BTC to Selçuk"))
-	blockchain.RunBlockchain(dbFile, []byte("Send 2 BTC to Selçuk"))
-	blockchain.RunBlockchain(dbFile, []byte("Send 1 BTC to Cengiz"))
+	db := database.NewDataBase(dbFile)
+	bc := blockchain.NewBlockchain(db)
+	defer func() error {
+		err := db.Close()
+		if err != nil {
+			log.Fatal("Database couldn't be closed", err)
+			return err
+		}
+		return nil
+	}()
+	bc.AddBlock("Send 2 BTC to Selçuk")
+	bc.AddBlock("Send 2 BTC to Selçuk")
+	bc.AddBlock("Send 1 BTC to Cengiz")
 
 	//blockchain.Blockchain.QueryBlockchain()
 }
