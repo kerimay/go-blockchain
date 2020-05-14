@@ -23,8 +23,6 @@ func NewBlockchain(db organizeall.DBaseInterface) *Blockchain {
 		return &Blockchain{db, newTip}
 	} else {
 		newTip := db.QueryTip()
-		/*var data string
-		b.AddBlock(data)*/
 		return &Blockchain{db, newTip}
 	}
 }
@@ -41,10 +39,13 @@ func (bc *Blockchain) AddBlock(data string) {
 	block := NewBlock([]byte(data), bc.tip)
 	encodedStruct := bl.EncodeStruct(block)
 	bc.db.NewTransaction(block.Hash, encodedStruct)
+	log.Println("Success!")
+	log.Println()
 }
 
 func (bc *Blockchain) Iterator() {
 	var b Block
+	newPow := NewProofOfWork(&b)
 	tip := bc.db.QueryTip()
 
 	for {
@@ -53,7 +54,10 @@ func (bc *Blockchain) Iterator() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("The hash %x belongs to the block...\n Hash: %x\n PrevHash: %x\n Data: %s\n Timestamp: %v\n Nonce: %v\n\n", tip, block.Hash, block.PrevHash, block.Data, block.Timestamp, block.Nonce)
+		if string(block.Data) == "Genesis Block" {
+			block.PrevHash = []byte("")
+		}
+		log.Printf("The hash %x belongs to the block...\n Hash: %x\n PrevHash: %x\n Data: %s\n Timestamp: %v\n Nonce: %v\n PoW: %v\n\n", tip, block.Hash, block.PrevHash, block.Data, block.Timestamp, block.Nonce, newPow.isPoWProven(block.Nonce))
 		tip = block.PrevHash
 		time.Sleep(time.Second * 2)
 		if string(block.Data) == "Genesis Block" {

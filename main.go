@@ -19,9 +19,5 @@ func main() {
 		}
 		return nil
 	}()
-	bc.AddBlock("Send 2 BTC to Selçuk")
-	bc.AddBlock("Send 2 BTC to Selçuk")
-	bc.AddBlock("Send 1 BTC to Cengiz")
-	bc.Iterator()
-
+	bc.Cli()
 }
