@@ -3,6 +3,7 @@ package blockchain
 import (
 	"github.com/kerimay/go-blockchain/organizeall"
 	"log"
+	"time"
 )
 
 type Blockchain struct {
@@ -42,13 +43,21 @@ func (bc *Blockchain) AddBlock(data string) {
 	bc.db.NewTransaction(block.Hash, encodedStruct)
 }
 
-func (bc *Blockchain) QueryBlockchain() {
-	/*for _, b := range bc.Blocks {
-		p := NewProofOfWork(b)
-		fmt.Printf("PrevHash: %x\n", b.PrevHash)
-		fmt.Printf("Data: %s\n", b.Data)
-		fmt.Printf("Hash: %x\n", b.Hash)
-		fmt.Printf("PoW: %v\n", p.isPoWProven(b.Nonce))
-		fmt.Printf("\n")
-	}*/
+func (bc *Blockchain) Iterator() {
+	var b Block
+	tip := bc.db.QueryTip()
+
+	for {
+		byteBlock := bc.db.QueryBlock(tip)
+		block, err := b.DecodeStruct(byteBlock)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("The hash %x belongs to the block...\n Hash: %x\n PrevHash: %x\n Data: %s\n Timestamp: %v\n Nonce: %v\n\n", tip, block.Hash, block.PrevHash, block.Data, block.Timestamp, block.Nonce)
+		tip = block.PrevHash
+		time.Sleep(time.Second * 2)
+		if string(block.Data) == "Genesis Block" {
+			break
+		}
+	}
 }

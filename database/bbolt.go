@@ -1,7 +1,6 @@
 package database
 
 import (
-	"fmt"
 	bolt "go.etcd.io/bbolt"
 	"log"
 	"time"
@@ -53,15 +52,15 @@ func (d *DataBase) QueryTip() []byte {
 	return tip
 }
 
-func (d *DataBase) QueryDB() { // düzenle
+func (d *DataBase) QueryBlock(hash []byte) []byte { // düzenle
+	var byteBlock []byte
 	d.db.View(func(tx *bolt.Tx) error {
-		c := tx.Bucket([]byte(blockBucket)).Cursor()
-		log.Println("Database is being queried...")
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-			fmt.Printf("%x hash belongs to the block: %s\n", k, v)
-		}
+		log.Println("Tip is being called...")
+		buck := tx.Bucket([]byte(blockBucket))
+		byteBlock = buck.Get(hash)
 		return nil
 	})
+	return byteBlock
 }
 
 func (d *DataBase) BlockchainExists() bool {

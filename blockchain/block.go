@@ -37,13 +37,12 @@ func (bl *Block) EncodeStruct(block *Block) []byte {
 	return network.Bytes()
 }
 
-func (bl *Block) DecodeStruct(data []byte) error {
-	var network bytes.Buffer //Reader?
-	x := bytes.NewReader(data)
-	dec := gob.NewDecoder(&network)
-	err := dec.Decode(x)
+func (bl *Block) DecodeStruct(data []byte) (*Block, error) {
+	a := bytes.NewReader(data)
+	dec := gob.NewDecoder(a)
+	err := dec.Decode(&bl)
 	if err != nil {
 		log.Fatal("decode err", err)
 	}
-	return err
+	return bl, err
 }

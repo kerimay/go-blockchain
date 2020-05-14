@@ -22,6 +22,6 @@ func main() {
 	bc.AddBlock("Send 2 BTC to Selçuk")
 	bc.AddBlock("Send 2 BTC to Selçuk")
 	bc.AddBlock("Send 1 BTC to Cengiz")
+	bc.Iterator()
 
-	//blockchain.Blockchain.QueryBlockchain()
 }
