@@ -11,6 +11,7 @@ const dbFile = "blockchain.db"
 func main() {
 	db := database.NewDataBase(dbFile)
 	bc := blockchain.NewBlockchain(db)
+	cli := NewCLI(bc)
 	defer func() error {
 		err := db.Close()
 		if err != nil {
@@ -19,5 +20,6 @@ func main() {
 		}
 		return nil
 	}()
-	bc.Cli()
+
+	cli.Run()
 }

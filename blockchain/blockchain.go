@@ -3,12 +3,11 @@ package blockchain
 import (
 	"github.com/kerimay/go-blockchain/organizeall"
 	"log"
-	"time"
 )
 
 type Blockchain struct {
 	db  organizeall.DBaseInterface
-	tip []byte
+	Tip []byte
 }
 
 func NewBlockchain(db organizeall.DBaseInterface) *Blockchain {
@@ -35,8 +34,8 @@ func NewGenesisBlock() *Block {
 
 func (bc *Blockchain) AddBlock(data string) {
 	var bl Block
-	bc.tip = bc.db.QueryTip()
-	block := NewBlock([]byte(data), bc.tip)
+	bc.Tip = bc.db.QueryTip()
+	block := NewBlock([]byte(data), bc.Tip)
 	encodedStruct := bl.EncodeStruct(block)
 	bc.db.NewTransaction(block.Hash, encodedStruct)
 	log.Println("Success!")
@@ -44,24 +43,15 @@ func (bc *Blockchain) AddBlock(data string) {
 }
 
 func (bc *Blockchain) Iterator() {
-	var b Block
-	newPow := NewProofOfWork(&b)
-	tip := bc.db.QueryTip()
+	iter := NewBlockchainIterator(bc)
 
-	for {
-		byteBlock := bc.db.QueryBlock(tip)
-		block, err := b.DecodeStruct(byteBlock)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if string(block.Data) == "Genesis Block" {
-			block.PrevHash = []byte("")
-		}
-		log.Printf("The hash %x belongs to the block...\n Hash: %x\n PrevHash: %x\n Data: %s\n Timestamp: %v\n Nonce: %v\n PoW: %v\n\n", tip, block.Hash, block.PrevHash, block.Data, block.Timestamp, block.Nonce, newPow.isPoWProven(block.Nonce))
-		tip = block.PrevHash
-		time.Sleep(time.Second * 2)
-		if string(block.Data) == "Genesis Block" {
-			break
+	if iter != nil {
+		for iter.hasNext() {
+			queryResult := iter.next()
+			newPow := NewProofOfWork(queryResult)
+			powBool := newPow.isPoWProven(queryResult.Nonce)
+
+			log.Printf("Hash: %x\n PrevHash: %x\n Data: %s\n Timestamp: %v\n Nonce: %v\n PoW: %v\n\n", queryResult.Hash, queryResult.PrevHash, queryResult.Data, queryResult.Timestamp, queryResult.Nonce, powBool)
 		}
 	}
 }
